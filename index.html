@@ -228,7 +228,7 @@
     <div id="win-screen">
         <canvas id="confettiCanvas"></canvas>
         <div class="win-content">
-            <h1>🌌 QUEST COMPLETE! 🌌<br>✨ HAPPY BIRTHDAY SANCHAY! ✨</h1>
+            <h1>🌌 QUEST COMPLETE! 🌌<br>✨ HAPPY BIRTHDAY! ✨</h1>
             <p>
                 CONGRATULATIONS! You survived 19 years. I hope you survive longer. Don't die. You're cute.
             </p>
@@ -394,10 +394,8 @@
             }
         });
 
-        // Universal handler for tracking coordinates across PC and Mobile
         function getCanvasX(clientX) {
             const rect = canvas.getBoundingClientRect();
-            // Project the exact bounding touch back onto our baseline 540px grid system
             return (clientX - rect.left) * (canvas.width / rect.width);
         }
 
@@ -565,15 +563,13 @@
             ctx.restore();
             ctx.restore();
 
-            // 4. Circular Profiles WITH DYNAMIC NAMES PRINTED BELOW THEM
+            // 4. Circular Profiles (CLEAN COUPLING - NO TEXT LABELS ATTACHED)
             items.forEach(item => {
+                ctx.save();
+                ctx.beginPath();
                 let centerX = item.x + item.size / 2;
                 let centerY = item.y + item.size / 2;
                 let radius = item.size / 2;
-
-                // Draw the profile avatar image
-                ctx.save();
-                ctx.beginPath();
                 ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
                 ctx.clip();
 
@@ -586,22 +582,6 @@
                     ctx.fill();
                 }
                 ctx.restore();
-
-                // Draw Name Tag underneath the circle
-                ctx.fillStyle = "#ffffff";
-                ctx.font = "bold 10px 'Press Start 2P', monospace";
-                ctx.textAlign = "center";
-                
-                // Add a text shadow effect for retro contrast against the moving cosmos
-                ctx.shadowColor = "#000000";
-                ctx.shadowBlur = 4;
-                ctx.shadowOffsetX = 2;
-                ctx.shadowOffsetY = 2;
-                
-                ctx.fillText(item.name, centerX, item.y + item.size + 15);
-                
-                // Clear shadows so it won't distort subsequent items
-                ctx.shadowColor = "transparent";
             });
         }
 
