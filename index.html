@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 Enchanted Midnight Catch 🌌</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            background: #040613; 
+            font-family: 'Press Start 2P', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- THE ARCADE FRAME --- */
+        #game-wrapper {
+            position: relative;
+            z-index: 10;
+            padding: 16px;
+            background: #02030a; 
+            border: 6px solid #141938;
+            border-radius: 12px;
+            box-shadow: 0 30px 70px rgba(0,0,0,0.8);
+        }
+
+        #ui-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #38bdf8;
+            background: #080b1a;
+            padding: 12px;
+            border: 4px solid #141938;
+            margin-bottom: 12px;
+            text-shadow: 2px 2px 0px #0369a1;
+            width: 516px;
+        }
+
+        #lives-container {
+            color: #ef4444;
+            text-shadow: 2px 2px 0px #991b1b;
+            font-size: 14px;
+        }
+
+        #canvas-container {
+            position: relative;
+        }
+
+        #gameCanvas {
+            display: block;
+            image-rendering: pixelated;
+            border: 4px solid #02030a;
+            background: #050716 url('images/image_c6fde0.jpg') no-repeat center;
+            background-size: cover;
+        }
+
+        /* --- SCREENS OVERLAYS --- */
+        .overlay {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 540px;
+            height: 600px;
+            background: rgba(4, 6, 19, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            border-radius: 2px;
+        }
+
+        #game-over-overlay {
+            display: none;
+            background: rgba(26, 4, 4, 0.85);
+        }
+
+        .arcade-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 16px;
+            color: #fff;
+            background: #0369a1;
+            border: 4px solid #38bdf8;
+            padding: 18px 32px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #024e78;
+            text-shadow: 2px 2px 0px #024e78;
+            transition: all 0.1s ease;
+        }
+
+        .arcade-btn:hover {
+            background: #38bdf8;
+            border-color: #fff;
+            box-shadow: 0 6px 0 #0369a1;
+            transform: translateY(-2px);
+        }
+
+        .arcade-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #0369a1;
+        }
+
+        #game-over-overlay h2 {
+            color: #ef4444;
+            font-size: 28px;
+            text-shadow: 4px 4px 0px #7f1d1d;
+            margin-bottom: 30px;
+        }
+
+        #retry-button {
+            background: #991b1b;
+            border-color: #f87171;
+            box-shadow: 0 6px 0 #7f1d1d;
+            text-shadow: 2px 2px 0px #5c1111;
+        }
+        #retry-button:hover {
+            background: #ef4444;
+            box-shadow: 0 6px 0 #991b1b;
+        }
+
+        /* --- WIN SCREEN OVERLAY --- */
+        #win-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #040613;
+            color: #fff;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        #confettiCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .win-content {
+            position: relative;
+            z-index: 2; 
+        }
+
+        #win-screen h1 {
+            font-size: 24px;
+            color: #38bdf8;
+            text-shadow: 4px 4px 0px #1e40af;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        #win-screen p {
+            font-size: 13px;
+            max-width: 650px;
+            line-height: 2.2;
+            color: #e2e8f0;
+            border: 4px solid #141938;
+            background: #080b1a;
+            padding: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-wrapper">
+        <div id="ui-container">
+            <div>SCORE: <span id="score-display">0</span> / 19</div>
+            <div id="lives-container">♥♥♥</div>
+        </div>
+        <div id="canvas-container">
+            <div id="start-overlay" class="overlay">
+                <button id="start-button" class="arcade-btn">START GAME 🎵</button>
+            </div>
+            <div id="game-over-overlay" class="overlay">
+                <h2>GAME OVER</h2>
+                <button id="retry-button" class="arcade-btn">TRY AGAIN ⚡</button>
+            </div>
+            <canvas id="gameCanvas" width="540" height="600"></canvas>
+        </div>
+    </div>
+
+    <div id="win-screen">
+        <canvas id="confettiCanvas"></canvas>
+        <div class="win-content">
+            <h1>🌌 QUEST COMPLETE! 🌌<br>✨ HAPPY BIRTHDAY! ✨</h1>
+            <p>
+                CONGRATULATIONS! You survived 19 years. I hope you survive longer. Don't die. You're cute.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const scoreDisplay = document.getElementById("score-display");
+        const livesContainer = document.getElementById("lives-container");
+        const winScreen = document.getElementById("win-screen");
+        const confettiCanvas = document.getElementById("confettiCanvas");
+        const confettiCtx = confettiCanvas.getContext("2d");
+        const startOverlay = document.getElementById("start-overlay");
+        const startButton = document.getElementById("start-button");
+        const gameOverOverlay = document.getElementById("game-over-overlay");
+        const retryButton = document.getElementById("retry-button");
+
+        let score = 0;
+        const targetScore = 19;
+        let lives = 3; 
+        let gameOver = false;
+        let gameStarted = false;
+
+        // --- ENFORCED AUDIO FORMAT CONVENTIONS ---
+        const bgMusic = new Audio("images/Piano CSM.mp3");
+        bgMusic.loop = true;               
+        bgMusic.volume = 0.45;              
+
+        const blazeSound = new Audio("images/Game Over.mp3");
+        blazeSound.volume = 0.6;
+
+        // --- ENTIRE ROSTER GRAPHICS LOADING SYSTEM ---
+        const basketImg = new Image();
+        basketImg.src = "images/Basket.webp";
+
+        const characterData = [
+            { name: "Bakugo", src: "images/Bakugo.jpg" },
+            { name: "Denji", src: "images/Denji.jpg" },
+            { name: "JJ", src: "images/JJ.webp" },
+            { name: "LK", src: "images/LK.jpg" },
+            { name: "Red Hood", src: "images/Red Hood.jpg" },
+            { name: "Spiderman", src: "images/Spiderman.png" },
+            { name: "Yuji", src: "images/Yuji.jpg" }
+        ];
+
+        const characterImages = characterData.map(char => {
+            const img = new Image();
+            img.src = char.src;
+            return { name: char.name, img: img };
+        });
+
+        // --- SHUFFLE BAG MATRIX ENGINE ---
+        let characterBag = [];
+        function getNextCharacter() {
+            if (characterBag.length === 0) {
+                characterBag = [...characterImages];
+                for (let i = characterBag.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [characterBag[i], characterBag[j]] = [characterBag[j], characterBag[i]];
+                }
+            }
+            return characterBag.pop();
+        }
+
+        const basket = {
+            x: canvas.width / 2 - 50,
+            y: canvas.height - 85,
+            width: 100,
+            height: 55,
+            scaleX: 1,
+            scaleY: 1,
+            bounceTimer: 0
+        };
+
+        const items = [];
+        const sparks = [];
+        let spawnTimer = 0;
+        let nextSpawnTime = 50;
+
+        // Ambient Background Stars
+        const canvasStars = [];
+        for(let i = 0; i < 60; i++) {
+            canvasStars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * (canvas.height - 250), 
+                size: Math.random() * 2.5 + 1,
+                alpha: Math.random(),
+                speed: 0.006 + Math.random() * 0.012
+            });
+        }
+
+        // --- CHERRY BLOSSOM CONFETTI ENGINE ---
+        const petals = [];
+        const petalColors = ["#ffb7c5", "#ff94a2", "#ffccd5", "#fca3b7"];
+
+        function initConfetti() {
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+            petals.length = 0;
+            for (let i = 0; i < 90; i++) {
+                petals.push({
+                    x: Math.random() * confettiCanvas.width,
+                    y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+                    size: Math.random() * 12 + 10, 
+                    color: petalColors[Math.floor(Math.random() * petalColors.length)],
+                    speedX: Math.random() * 1.2 - 0.6,
+                    speedY: Math.random() * 1.4 + 1.2,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 1.5 - 0.75
+                });
+            }
+        }
+
+        function drawDetailedPetal(cCtx, size) {
+            cCtx.beginPath();
+            cCtx.moveTo(0, 0);
+            cCtx.bezierCurveTo(-size / 2, -size / 3, -size / 2, -size * 0.9, -size / 5, -size);
+            cCtx.lineTo(0, -size * 0.78);
+            cCtx.lineTo(size / 5, -size);
+            cCtx.bezierCurveTo(size / 2, -size * 0.9, size / 2, -size / 3, 0, 0);
+            cCtx.closePath();
+            cCtx.fill();
+        }
+
+        function animateConfetti() {
+            confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            petals.forEach(p => {
+                p.y += p.speedY;
+                p.x += p.speedX + Math.sin(p.y / 40) * 0.6; 
+                p.rotation += p.rotationSpeed;
+
+                if (p.y > confettiCanvas.height) {
+                    p.y = -20;
+                    p.x = Math.random() * confettiCanvas.width;
+                }
+                confettiCtx.save();
+                confettiCtx.translate(p.x, p.y);
+                confettiCtx.rotate((p.rotation * Math.PI) / 180);
+                confettiCtx.fillStyle = p.color;
+                drawDetailedPetal(confettiCtx, p.size);
+                confettiCtx.restore();
+            });
+            if (gameOver && score >= targetScore) {
+                requestAnimationFrame(animateConfetti);
+            }
+        }
+
+        // --- POP SPARKS LOGIC ---
+        function createSparks(x, y) {
+            for (let i = 0; i < 12; i++) {
+                sparks.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.7) * 5,
+                    size: Math.random() * 3 + 2,
+                    alpha: 1,
+                    decay: Math.random() * 0.03 + 0.02
+                });
+            }
+        }
+
+        window.addEventListener("resize", () => {
+            if (gameOver && score >= targetScore) {
+                confettiCanvas.width = window.innerWidth;
+                confettiCanvas.height = window.innerHeight;
+            }
+        });
+
+        canvas.addEventListener("mousemove", (e) => {
+            if (!gameStarted || gameOver) return;
+            const rect = canvas.getBoundingClientRect();
+            basket.x = e.clientX - rect.left - basket.width / 2;
+            if (basket.x < 10) basket.x = 10; 
+            if (basket.x > canvas.width - basket.width - 10) basket.x = canvas.width - basket.width - 10;
+        });
+
+        // Mobile Touch Support
+        canvas.addEventListener("touchmove", (e) => {
+            if (!gameStarted || gameOver) return;
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            basket.x = touch.clientX - rect.left - basket.width / 2;
+            if (basket.x < 10) basket.x = 10; 
+            if (basket.x > canvas.width - basket.width - 10) basket.x = canvas.width - basket.width - 10;
+        }, { passive: false });
+
+        function spawnItem() {
+            const randomChar = getNextCharacter();
+            const bigSize = 75; 
+            items.push({
+                x: 20 + Math.random() * (canvas.width - bigSize - 40),
+                y: -bigSize,
+                size: bigSize,
+                speed: 2.0 + Math.random() * 1.5, 
+                imgObj: randomChar.img,
+                name: randomChar.name
+            });
+        }
+
+        function update() {
+            canvasStars.forEach(star => {
+                star.alpha += star.speed;
+                if(star.alpha > 1 || star.alpha < 0.1) star.speed = -star.speed;
+            });
+
+            if (!gameStarted || gameOver) return;
+
+            if (basket.bounceTimer > 0) {
+                basket.bounceTimer--;
+                basket.scaleX = 1.15;
+                basket.scaleY = 0.85;
+            } else {
+                basket.scaleX = 1.0;
+                basket.scaleY = 1.0;
+            }
+
+            for (let i = sparks.length - 1; i >= 0; i--) {
+                let s = sparks[i];
+                s.x += s.vx;
+                s.y += s.vy;
+                s.alpha -= s.decay;
+                if (s.alpha <= 0) sparks.splice(i, 1);
+            }
+
+            spawnTimer++;
+            if (spawnTimer >= nextSpawnTime) {
+                spawnItem();
+                spawnTimer = 0;
+                nextSpawnTime = 45 + Math.floor(Math.random() * 25);
+            }
+
+            for (let i = items.length - 1; i >= 0; i--) {
+                let item = items[i];
+                item.y += item.speed;
+
+                if (
+                    item.y + item.size >= basket.y + 10 &&
+                    item.y <= basket.y + basket.height &&
+                    item.x + item.size >= basket.x &&
+                    item.x <= basket.x + basket.width
+                ) {
+                    score++;
+                    scoreDisplay.innerText = score;
+                    
+                    basket.bounceTimer = 8;
+                    createSparks(item.x + item.size / 2, basket.y);
+                    items.splice(i, 1);
+
+                    if (score >= targetScore) {
+                        gameOver = true;
+                        winScreen.style.display = "flex";
+                        initConfetti();
+                        animateConfetti();
+                    }
+                    continue;
+                }
+
+                if (item.y > canvas.height) {
+                    items.splice(i, 1);
+                    lives--;
+                    
+                    livesContainer.innerText = "♥".repeat(lives) + "♡".repeat(3 - lives);
+
+                    if (lives <= 0) {
+                        triggerGameOver();
+                    }
+                }
+            }
+        }
+
+        function triggerGameOver() {
+            gameOver = true;
+            bgMusic.pause();
+            blazeSound.currentTime = 0;
+            blazeSound.play().catch(e => console.log(e));
+            gameOverOverlay.style.display = "flex";
+        }
+
+        function resetGame() {
+            score = 0;
+            lives = 3;
+            items.length = 0;
+            sparks.length = 0;
+            spawnTimer = 0;
+            scoreDisplay.innerText = "0";
+            livesContainer.innerText = "♥♥♥";
+            gameOverOverlay.style.display = "none";
+            gameOver = false;
+            
+            bgMusic.currentTime = 0;
+            bgMusic.play().catch(e => console.log(e));
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Stars
+            canvasStars.forEach(star => {
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // 2. Sparks
+            sparks.forEach(s => {
+                ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // 3. Juiced Basket
+            ctx.save();
+            let basketCenterX = basket.x + basket.width / 2;
+            let basketBottomY = basket.y + basket.height;
+            ctx.translate(basketCenterX, basketBottomY);
+            ctx.scale(basket.scaleX, basket.scaleY);
+            ctx.translate(-basketCenterX, -basketBottomY);
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.roundRect(basket.x, basket.y, basket.width, basket.height, 12); 
+            ctx.clip();
+
+            if (basketImg.complete && basketImg.naturalWidth !== 0) {
+                ctx.drawImage(basketImg, basket.x, basket.y, basket.width, basket.height);
+            } else {
+                ctx.fillStyle = "#1d4ed8";
+                ctx.fillRect(basket.x, basket.y, basket.width, basket.height);
+            }
+            ctx.restore();
+            ctx.restore();
+
+            // 4. Circular Character Profiles
+            items.forEach(item => {
+                ctx.save();
+                ctx.beginPath();
+                let centerX = item.x + item.size / 2;
+                let centerY = item.y + item.size / 2;
+                let radius = item.size / 2;
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.clip();
+
+                if (item.imgObj.complete && item.imgObj.naturalWidth !== 0) {
+                    ctx.drawImage(item.imgObj, item.x, item.y, item.size, item.size);
+                } else {
+                    ctx.fillStyle = "#38bdf8";
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            });
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- HARDWARE INTERACTION PERMISSIONS & LAUNCH ---
+        startButton.addEventListener("click", () => {
+            gameStarted = true;
+            startOverlay.style.display = "none";
+            
+            bgMusic.play().catch(err => console.log(err));
+
+            // Mobile-Unlocking Trick for Game Over track permissions
+            blazeSound.play().then(() => {
+                blazeSound.pause();
+                blazeSound.currentTime = 0;
+            }).catch(err => console.log("Mobile audio sync active:", err));
+        });
+
+        retryButton.addEventListener("click", () => {
+            resetGame();
+        });
+
+        gameLoop();
+    </script>
+</body>
+</html>
