@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🌌 Enchanted Midnight Catch 🌌</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
@@ -16,41 +16,47 @@
             justify-content: center;
             min-height: 100vh;
             overflow: hidden;
+            padding: 10px;
+            box-sizing: border-box;
         }
 
-        /* --- THE ARCADE FRAME --- */
+        /* --- RESPONSIVE ARCADE FRAME --- */
         #game-wrapper {
             position: relative;
             z-index: 10;
-            padding: 16px;
+            padding: 12px;
             background: #02030a; 
             border: 6px solid #141938;
             border-radius: 12px;
-            box-shadow: 0 30px 70px rgba(0,0,0,0.8);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         #ui-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 11px;
+            font-size: 10px;
             color: #38bdf8;
             background: #080b1a;
-            padding: 12px;
+            padding: 10px;
             border: 4px solid #141938;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             text-shadow: 2px 2px 0px #0369a1;
-            width: 516px;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         #lives-container {
             color: #ef4444;
             text-shadow: 2px 2px 0px #991b1b;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         #canvas-container {
             position: relative;
+            max-width: 100%;
         }
 
         #gameCanvas {
@@ -59,6 +65,36 @@
             border: 4px solid #02030a;
             background: #050716 url('images/image_c6fde0.jpg') no-repeat center;
             background-size: cover;
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* --- MOBILE RESPONSIVE MEDIA QUERIES --- */
+        @media (max-width: 580px) {
+            #game-wrapper {
+                padding: 6px;
+                border-width: 4px;
+            }
+            #ui-container {
+                font-size: 8px;
+                padding: 6px;
+            }
+            #lives-container {
+                font-size: 10px;
+            }
+            .overlay {
+                width: 100% !important;
+                height: 100% !important;
+                top: 0 !important;
+                left: 0 !important;
+            }
+            .arcade-btn {
+                font-size: 12px;
+                padding: 12px 20px;
+            }
+            #game-over-overlay h2 {
+                font-size: 20px;
+            }
         }
 
         /* --- SCREENS OVERLAYS --- */
@@ -103,11 +139,6 @@
             transform: translateY(-2px);
         }
 
-        .arcade-btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 #0369a1;
-        }
-
         #game-over-overlay h2 {
             color: #ef4444;
             font-size: 28px;
@@ -120,10 +151,6 @@
             border-color: #f87171;
             box-shadow: 0 6px 0 #7f1d1d;
             text-shadow: 2px 2px 0px #5c1111;
-        }
-        #retry-button:hover {
-            background: #ef4444;
-            box-shadow: 0 6px 0 #991b1b;
         }
 
         /* --- WIN SCREEN OVERLAY --- */
@@ -142,6 +169,7 @@
             text-align: center;
             z-index: 100;
             padding: 20px;
+            box-sizing: border-box;
         }
 
         #confettiCanvas {
@@ -160,21 +188,21 @@
         }
 
         #win-screen h1 {
-            font-size: 24px;
+            font-size: 18px;
             color: #38bdf8;
-            text-shadow: 4px 4px 0px #1e40af;
+            text-shadow: 3px 3px 0px #1e40af;
             margin-bottom: 25px;
             line-height: 1.6;
         }
 
         #win-screen p {
-            font-size: 13px;
-            max-width: 650px;
+            font-size: 11px;
+            max-width: 500px;
             line-height: 2.2;
             color: #e2e8f0;
             border: 4px solid #141938;
             background: #080b1a;
-            padding: 30px;
+            padding: 20px;
         }
     </style>
 </head>
@@ -200,7 +228,7 @@
     <div id="win-screen">
         <canvas id="confettiCanvas"></canvas>
         <div class="win-content">
-            <h1>🌌 QUEST COMPLETE! 🌌<br>✨ HAPPY BIRTHDAY! ✨</h1>
+            <h1>🌌 QUEST COMPLETE! 🌌<br>✨ HAPPY BIRTHDAY SANCHAY! ✨</h1>
             <p>
                 CONGRATULATIONS! You survived 19 years. I hope you survive longer. Don't die. You're cute.
             </p>
@@ -226,7 +254,6 @@
         let gameOver = false;
         let gameStarted = false;
 
-        // --- ENFORCED AUDIO FORMAT CONVENTIONS ---
         const bgMusic = new Audio("images/Piano CSM.mp3");
         bgMusic.loop = true;               
         bgMusic.volume = 0.45;              
@@ -234,7 +261,6 @@
         const blazeSound = new Audio("images/Game Over.mp3");
         blazeSound.volume = 0.6;
 
-        // --- ENTIRE ROSTER GRAPHICS LOADING SYSTEM ---
         const basketImg = new Image();
         basketImg.src = "images/Basket.webp";
 
@@ -254,7 +280,6 @@
             return { name: char.name, img: img };
         });
 
-        // --- SHUFFLE BAG MATRIX ENGINE ---
         let characterBag = [];
         function getNextCharacter() {
             if (characterBag.length === 0) {
@@ -282,7 +307,6 @@
         let spawnTimer = 0;
         let nextSpawnTime = 50;
 
-        // Ambient Background Stars
         const canvasStars = [];
         for(let i = 0; i < 60; i++) {
             canvasStars.push({
@@ -294,7 +318,6 @@
             });
         }
 
-        // --- CHERRY BLOSSOM CONFETTI ENGINE ---
         const petals = [];
         const petalColors = ["#ffb7c5", "#ff94a2", "#ffccd5", "#fca3b7"];
 
@@ -350,7 +373,6 @@
             }
         }
 
-        // --- POP SPARKS LOGIC ---
         function createSparks(x, y) {
             for (let i = 0; i < 12; i++) {
                 sparks.push({
@@ -372,21 +394,25 @@
             }
         });
 
+        // Universal handler for tracking coordinates across PC and Mobile
+        function getCanvasX(clientX) {
+            const rect = canvas.getBoundingClientRect();
+            // Project the exact bounding touch back onto our baseline 540px grid system
+            return (clientX - rect.left) * (canvas.width / rect.width);
+        }
+
         canvas.addEventListener("mousemove", (e) => {
             if (!gameStarted || gameOver) return;
-            const rect = canvas.getBoundingClientRect();
-            basket.x = e.clientX - rect.left - basket.width / 2;
+            basket.x = getCanvasX(e.clientX) - basket.width / 2;
             if (basket.x < 10) basket.x = 10; 
             if (basket.x > canvas.width - basket.width - 10) basket.x = canvas.width - basket.width - 10;
         });
 
-        // Mobile Touch Support
         canvas.addEventListener("touchmove", (e) => {
             if (!gameStarted || gameOver) return;
-            e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
+            e.preventDefault(); 
             const touch = e.touches[0];
-            basket.x = touch.clientX - rect.left - basket.width / 2;
+            basket.x = getCanvasX(touch.clientX) - basket.width / 2;
             if (basket.x < 10) basket.x = 10; 
             if (basket.x > canvas.width - basket.width - 10) basket.x = canvas.width - basket.width - 10;
         }, { passive: false });
@@ -398,7 +424,7 @@
                 x: 20 + Math.random() * (canvas.width - bigSize - 40),
                 y: -bigSize,
                 size: bigSize,
-                speed: 2.0 + Math.random() * 1.5, 
+                speed: 2.2 + Math.random() * 1.3, 
                 imgObj: randomChar.img,
                 name: randomChar.name
             });
@@ -539,13 +565,15 @@
             ctx.restore();
             ctx.restore();
 
-            // 4. Circular Character Profiles
+            // 4. Circular Profiles WITH DYNAMIC NAMES PRINTED BELOW THEM
             items.forEach(item => {
-                ctx.save();
-                ctx.beginPath();
                 let centerX = item.x + item.size / 2;
                 let centerY = item.y + item.size / 2;
                 let radius = item.size / 2;
+
+                // Draw the profile avatar image
+                ctx.save();
+                ctx.beginPath();
                 ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
                 ctx.clip();
 
@@ -558,6 +586,22 @@
                     ctx.fill();
                 }
                 ctx.restore();
+
+                // Draw Name Tag underneath the circle
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 10px 'Press Start 2P', monospace";
+                ctx.textAlign = "center";
+                
+                // Add a text shadow effect for retro contrast against the moving cosmos
+                ctx.shadowColor = "#000000";
+                ctx.shadowBlur = 4;
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
+                
+                ctx.fillText(item.name, centerX, item.y + item.size + 15);
+                
+                // Clear shadows so it won't distort subsequent items
+                ctx.shadowColor = "transparent";
             });
         }
 
@@ -567,14 +611,11 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // --- HARDWARE INTERACTION PERMISSIONS & LAUNCH ---
         startButton.addEventListener("click", () => {
             gameStarted = true;
             startOverlay.style.display = "none";
-            
             bgMusic.play().catch(err => console.log(err));
 
-            // Mobile-Unlocking Trick for Game Over track permissions
             blazeSound.play().then(() => {
                 blazeSound.pause();
                 blazeSound.currentTime = 0;
